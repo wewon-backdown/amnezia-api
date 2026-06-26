@@ -87,7 +87,7 @@ export const getServerBackupSchema = {
           },
           example: {
             wgConfig:
-              "[Interface]\\nAddress = 10.8.1.2/32\\nPrivateKey = <client-private-key>\\n\\n[Peer]\\nPublicKey = <server-public-key>\\nAllowedIPs = 0.0.0.0/0",
+              "[Interface]\\nAddress = 10.8.1.2/32\\nPrivateKey = <client-private-key>\\n\\n[Peer]\\nPublicKey = <server-public-key>\\nAllowedIPs = 0.0.0.0/0, ::/0",
             presharedKey: "y8PpvlM2QEqLPTbV5X3QfUuRiK6sR3yIYB4u6Fvxtn4=",
             serverPublicKey: "aDrz0wS1C8VZK7arx2n3dE0Bf2c5LQdYpO7h4g9l8m0=",
             clients: [
