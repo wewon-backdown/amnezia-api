@@ -15,6 +15,12 @@ import { AmneziaWg2Connection } from "@/helpers/amneziaWg2Connection";
 
 /**
  * Сервис для работы с AmneziaWG 2.0
+ *
+ * patches vs upstream kyoresuas/amnezia-api:
+ * - client IP allocation starts at .2 (server keeps .1)
+ * - AllowedIPs IPv4-only (no ::/0)
+ * - I1 default empty
+ * - omit I1-I5 from client config when server has no CPS params
  */
 export class AmneziaWg2Service {
   static key = "amneziaWg2Service";
@@ -44,7 +50,7 @@ export class AmneziaWg2Service {
     `[Peer]\n` +
     `PublicKey = $SERVER_PUBLIC_KEY\n` +
     `PresharedKey = $PRESHARED_KEY\n` +
-    `AllowedIPs = 0.0.0.0/0, ::/0\n` +
+    `AllowedIPs = 0.0.0.0/0\n` +
     `$ENDPOINT_LINE` +
     `PersistentKeepalive = $KEEPALIVE\n`;
 
@@ -350,7 +356,7 @@ export class AmneziaWg2Service {
       }
 
       // Находим первый свободный IP
-      for (let host = 1; host <= 254; host++) {
+      for (let host = 2; host <= 254; host++) {
         if (!used.has(host)) {
           return `${prefix}.${host}`;
         }
@@ -447,8 +453,7 @@ export class AmneziaWg2Service {
       if (!commented) {
         if (key === "S3") return "20";
         if (key === "S4") return "23";
-        if (key === "I1")
-          return "<r 2><b 0x858000010001000000000669636c6f756403636f6d0000010001c00c000100010000105a00044d583737>";
+        if (key === "I1") return "";
       }
 
       return commented;
@@ -477,7 +482,7 @@ export class AmneziaWg2Service {
     const secondaryDns = AppContract.DNS.SECONDARY;
 
     // Текстовый конфиг
-    const configText = AmneziaWg2Service.AMNEZIAWG2_CLIENT_TEMPLATE.replace(
+    let configText = AmneziaWg2Service.AMNEZIAWG2_CLIENT_TEMPLATE.replace(
       /\$CLIENT_ADDRESS/g,
       assignedIp,
     )
@@ -510,10 +515,18 @@ export class AmneziaWg2Service {
       )
       .replace(/\$KEEPALIVE/g, String(keepAlive));
 
+    if (
+      ![awgParams.I1, awgParams.I2, awgParams.I3, awgParams.I4, awgParams.I5].some(
+        (v) => String(v || "").trim(),
+      )
+    ) {
+      configText = configText.replace(/^I[1-5] = .*\n/gm, "");
+    }
+
     // Последний конфиг
     const lastConfig = {
       ...awgParams,
-      allowed_ips: ["0.0.0.0/0", "::/0"],
+      allowed_ips: ["0.0.0.0/0"],
       clientId: clientId,
       client_ip: `${assignedIp}`,
       client_priv_key: clientPrivateKey,
@@ -671,7 +684,7 @@ export class AmneziaWg2Service {
 
     // Удаляем клиента
     table = table.filter(
-      (x) => ((x && (x.clientId || x.publicKey)) || "") !== clientId,
+      (x) => ((x && (x.clientId || x.publicKey)) || "") === clientId,
     );
 
     // Проверяем, что клиент был удален

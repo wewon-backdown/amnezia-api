@@ -37,7 +37,7 @@ export class AmneziaWgService {
     `[Peer]\n` +
     `PublicKey = $SERVER_PUBLIC_KEY\n` +
     `PresharedKey = $PRESHARED_KEY\n` +
-    `AllowedIPs = 0.0.0.0/0, ::/0\n` +
+    `AllowedIPs = 0.0.0.0/0\n` +
     `$ENDPOINT_LINE` +
     `PersistentKeepalive = $KEEPALIVE\n`;
 
@@ -341,7 +341,7 @@ export class AmneziaWgService {
       }
 
       // Находим первый свободный IP
-      for (let host = 1; host <= 254; host++) {
+      for (let host = 2; host <= 254; host++) {
         if (!used.has(host)) {
           return `${prefix}.${host}`;
         }
@@ -458,7 +458,7 @@ export class AmneziaWgService {
     // Последний конфиг
     const lastConfig = {
       ...awgParams,
-      allowed_ips: ["0.0.0.0/0", "::/0"],
+      allowed_ips: ["0.0.0.0/0"],
       clientId: clientId,
       client_ip: `${assignedIp}`,
       client_priv_key: clientPrivateKey,
