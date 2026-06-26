@@ -684,7 +684,7 @@ export class AmneziaWg2Service {
 
     // Удаляем клиента
     table = table.filter(
-      (x) => ((x && (x.clientId || x.publicKey)) || "") === clientId,
+      (x) => ((x && (x.clientId || x.publicKey)) || "") !== clientId,
     );
 
     // Проверяем, что клиент был удален
