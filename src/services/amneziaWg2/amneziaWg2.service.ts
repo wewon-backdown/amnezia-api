@@ -515,14 +515,15 @@ export class AmneziaWg2Service {
       )
       .replace(/\$KEEPALIVE/g, String(keepAlive));
 
-    if (
-      ![awgParams.I1, awgParams.I2, awgParams.I3, awgParams.I4, awgParams.I5].some(
-        (v) => String(v || "").trim(),
-      )
-    ) {
-      configText = configText.replace(/^I[1-5] =\s*\n/gm, "");
-    }
-    
+    configText = configText
+      .split("\n")
+      .filter((line) => {
+        const m = line.match(/^I[1-5] =\s*(.*)$/);
+        if (!m) return true;
+        return m[1].trim().length > 0;
+      })
+      .join("\n");
+
     const serverMtu =
       config.match(/^\s*MTU\s*=\s*(\d+)\s*$/im)?.[1] ||
       String(AppContract.AmneziaWG2.DEFAULTS.MTU);
