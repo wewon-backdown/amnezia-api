@@ -520,9 +520,23 @@ export class AmneziaWg2Service {
         (v) => String(v || "").trim(),
       )
     ) {
-      configText = configText.replace(/^I[1-5] = .*\n/gm, "");
+      configText = configText.replace(/^I[1-5] =\s*\n/gm, "");
     }
-
+    
+    const serverMtu =
+      config.match(/^\s*MTU\s*=\s*(\d+)\s*$/im)?.[1] ||
+      String(AppContract.AmneziaWG2.DEFAULTS.MTU);
+    if (/^\s*MTU\s*=/im.test(configText)) {
+      configText = configText.replace(
+        /^\s*MTU\s*=\s*\d+\s*\n/im,
+        `MTU = ${serverMtu}\n`,
+      );
+    } else {
+      configText = configText.replace(
+        /^(H4 = .*\n\n)/m,
+        `$1MTU = ${serverMtu}\n`,
+      );
+    }
     // Последний конфиг
     const lastConfig = {
       ...awgParams,
